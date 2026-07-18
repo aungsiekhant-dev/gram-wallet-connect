@@ -41,17 +41,17 @@
         }
       }
       function init(){
-        if (!window.TonConnectUI){ setStatus('Failed to load TON Connect library. Check your connection.', true); return; }
+        if (!window.TON_CONNECT_UI){ setStatus('Failed to load TON Connect library. Check your connection.', true); return; }
         var tc;
-        try{ tc = new window.TonConnectUI({ manifestUrl: 'https://base44.app/api/apps/6a5a1a79f1a678ff57eb227f/files/mp/public/6a5a1a79f1a678ff57eb227f/f64036c10_tonconnect-manifest.json', buttonRootId: 'tc-root' }); }
+        try{ tc = new window.TON_CONNECT_UI.TonConnectUI({ manifestUrl: 'https://base44.app/api/apps/6a5a1a79f1a678ff57eb227f/files/mp/public/6a5a1a79f1a678ff57eb227f/f64036c10_tonconnect-manifest.json', buttonRootId: 'tc-root' }); }
         catch(e){ setStatus('Init error: ' + e.message, true); return; }
         setStatus('Choose a wallet to connect.');
         try{ if (tc.wallet && tc.wallet.account){ sendBack(tc.wallet.account.address); return; } }catch(e){}
         try{ tc.openModal(); }catch(e){}
         try{ tc.onStatusChange(function(w){ if (w && w.account && w.account.address){ sendBack(w.account.address); } }); }catch(e){}
       }
-      if (window.TonConnectUI){ init(); }
-      else { var iv=setInterval(function(){ if(window.TonConnectUI){ clearInterval(iv); init(); } },200); setTimeout(function(){ clearInterval(iv); if(!window.TonConnectUI){ setStatus('Failed to load TON Connect library.', true);} }, 8000); }
+      if (window.TON_CONNECT_UI){ init(); }
+      else { var iv=setInterval(function(){ if(window.TON_CONNECT_UI){ clearInterval(iv); init(); } },200); setTimeout(function(){ clearInterval(iv); if(!window.TON_CONNECT_UI){ setStatus('Failed to load TON Connect library.', true);} }, 8000); }
     })();
   </script>
 </body>
