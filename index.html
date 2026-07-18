@@ -1,77 +1,46 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
 
 <title>TON Connect — GramAlert</title>
 
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@tonconnect/ui@latest/dist/tonconnect-ui.min.js"></script>
 
 <style>
-html,body{
-  margin:0;
-  padding:0;
-  height:100%;
-}
-
 body{
-  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
-  background:#0e1626;
-  color:#e8eef7;
-  display:flex;
-  flex-direction:column;
-  align-items:center;
-  justify-content:center;
-  min-height:100vh;
-  padding:28px 20px;
-  box-sizing:border-box;
+background:#0e1626;
+color:white;
+font-family:Arial,sans-serif;
+text-align:center;
+padding:40px 20px;
 }
 
 .logo{
-  width:64px;
-  height:64px;
-  border-radius:16px;
-  background:linear-gradient(135deg,#0098EA,#0057B8);
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  font-size:34px;
-  margin-bottom:18px;
+font-size:50px;
 }
 
 h1{
-  font-size:20px;
-  margin:0 0 6px;
+font-size:22px;
 }
 
 p{
-  color:#8a9bb4;
-  font-size:14px;
-  text-align:center;
-  max-width:340px;
-  line-height:1.55;
-  margin:0 0 26px;
+color:#9aa8bd;
 }
 
 #tc-root{
-  width:100%;
-  max-width:340px;
-}
-
-#tc-root button{
-  width:100%!important;
+margin-top:30px;
 }
 
 .status{
-  margin-top:18px;
-  font-size:13px;
-  color:#8a9bb4;
-  text-align:center;
+margin-top:20px;
+color:#9aa8bd;
 }
 
-.err{
-  color:#ff6b6b;
+.error{
+color:red;
 }
 </style>
 
@@ -84,7 +53,7 @@ p{
 <h1>Connect TON Wallet</h1>
 
 <p>
-Link your Tonkeeper or MyTonWallet to GramAlert to track your portfolio and receive real-time alerts.
+Link your Tonkeeper or MyTonWallet to GramAlert to track your portfolio.
 </p>
 
 <div id="tc-root"></div>
@@ -94,78 +63,33 @@ Loading wallet UI...
 </div>
 
 
-<script src="https://cdn.jsdelivr.net/npm/@tonconnect/ui@latest/dist/tonconnect-ui.min.js"></script>
-
 <script>
 
-(function(){
+let status=document.getElementById("status");
 
-const tg = window.Telegram && window.Telegram.WebApp;
 
-if(tg){
-  try{
-    tg.ready();
-    tg.expand();
-  }catch(e){}
+function msg(text,error=false){
+status.innerHTML=text;
+status.className=error?"status error":"status";
 }
 
 
-const status=document.getElementById("status");
-
-
-function setStatus(msg,error=false){
-
-  status.textContent=msg;
-  status.className="status";
-
-  if(error){
-    status.className+=" err";
-  }
-
-}
-
-
-function sendBack(address){
-
-  setStatus("Connected! Sending to bot...");
-
-  if(tg && typeof tg.sendData==="function"){
-
-    tg.sendData(JSON.stringify({
-      address:address,
-      source:"ton_connect"
-    }));
-
-    setTimeout(()=>{
-      try{
-        tg.close();
-      }catch(e){}
-    },500);
-
-  }
-
-}
-
-
-function init(){
+function start(){
 
 if(typeof TON_CONNECT_UI==="undefined"){
 
- setStatus(
- "TON Connect library failed to load",
- true
- );
-
- return;
+msg("TON Connect failed loading. Refresh.",true);
+return;
 
 }
 
 
-let tc;
+let connector;
+
 
 try{
 
-tc=new TON_CONNECT_UI.TonConnectUI({
+connector=new TON_CONNECT_UI.TonConnectUI({
 
 manifestUrl:
 "https://aungsiekhant-dev.github.io/gram-wallet-connect/tonconnect-manifest.json",
@@ -177,24 +101,34 @@ buttonRootId:"tc-root"
 
 }catch(e){
 
-setStatus(
-"Init error: "+e.message,
-true
-);
-
+msg(e.message,true);
 return;
 
 }
 
 
-setStatus("Choose a wallet to connect.");
+msg("Choose wallet");
 
 
-tc.onStatusChange(function(wallet){
+connector.onStatusChange(wallet=>{
 
-if(wallet && wallet.account){
+if(wallet){
 
-sendBack(wallet.account.address);
+msg("Connected!");
+
+let address=wallet.account.address;
+
+
+let tg=window.Telegram.WebApp;
+
+
+if(tg){
+
+tg.sendData(JSON.stringify({
+address:address
+}));
+
+}
 
 }
 
@@ -204,33 +138,13 @@ sendBack(wallet.account.address);
 }
 
 
-if(typeof TON_CONNECT_UI!=="undefined"){
 
-init();
+window.onload=function(){
 
-}else{
+setTimeout(start,1000);
 
-setTimeout(function(){
+};
 
-if(typeof TON_CONNECT_UI!=="undefined"){
-
-init();
-
-}else{
-
-setStatus(
-"Failed to load TON Connect library.",
-true
-);
-
-}
-
-},8000);
-
-}
-
-
-})();
 
 </script>
 
